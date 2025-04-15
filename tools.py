@@ -263,15 +263,56 @@ class HistogramEqualizationPipeline:
 
         elif self.colorspace == 'rgb':
 
-            # 绘制直方图
             plt.figure(figsize=(12, 10))
+            colors = ['r', 'g', 'b']
+            
             # 显示原始RGB图像
             plt.subplot(221)
-            plt.imshow(self.histogram)
+            for i, c in enumerate(colors):
+                plt.plot(self.histogram[i], color=c)
+            plt.legend(['Red', 'Green', 'Blue'])
+            plt.xlabel('Pixel Value')
+            plt.ylabel('Frequency')
+            plt.grid(True, alpha=0.3)
             plt.title(f"{self.colorspace.upper()} Image")
-            plt.axis('off')
+
+            
             # 显示HSV均衡化结果
             plt.subplot(222)
+            for i, c in enumerate(colors):
+                plt.plot(self.histogram_equalized[0, i], color=c)
+            plt.legend(['Red', 'Green', 'Blue'])
+            plt.xlabel('Pixel Value')
+            plt.ylabel('Frequency')
+            plt.grid(True, alpha=0.3)
+            plt.title(f"{self.colorspace.upper()} Image Equalized with HSV")
+
+            
+            # 显示YCrCb均衡化结果
+            plt.subplot(223)
+            for i, c in enumerate(colors):
+                plt.plot(self.histogram_equalized[1, i], color=c)
+            plt.legend(['Red', 'Green', 'Blue'])
+            plt.xlabel('Pixel Value')
+            plt.ylabel('Frequency')
+            plt.grid(True, alpha=0.3)
+            plt.title(f"{self.colorspace.upper()} Image Equalized with YCrCb")
+
+            
+            # 显示RGB均衡化结果
+            plt.subplot(224)
+            for i, c in enumerate(colors):
+                plt.plot(self.histogram_equalized[2, i], color=c)
+            plt.legend(['Red', 'Green', 'Blue'])
+            plt.xlabel('Pixel Value')
+            plt.ylabel('Frequency')
+            plt.grid(True, alpha=0.3)
+            plt.title(f"{self.colorspace.upper()} Image Equalized with RGB")
+
+            plt.suptitle("Histogram comparison of different equalization method")
+            plt.tight_layout()
+            plt.show()
+
     
     def color_histogram_equalization(self) -> np.ndarray:
         """
