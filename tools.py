@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 from typing import Tuple, List, Optional, Union
+import os
 import gc
 
 class HistogramEqualizationPipeline:
@@ -594,3 +595,86 @@ def compare_histograms(hist1: np.ndarray, hist2: np.ndarray, method: str = 'corr
         return cv2.compareHist(hist1.astype(np.float32), hist2.astype(np.float32), cv2.HISTCMP_BHATTACHARYYA)
     else:
         raise ValueError("不支持的比较方法")
+
+
+
+def apply_and_display_equalization(image_path):
+    """
+    Loads an image, converts it to grayscale if necessary, applies global
+    Histogram Equalization (HE) and Contrast Limited Adaptive Histogram
+    Equalization (CLAHE), and displays the original grayscale image along
+    with the HE and CLAHE results, plus the original histogram, in a 2x2
+    matplotlib plot.
+
+    Note: Standard AHE is computationally expensive and prone to noise
+    amplification. CLAHE is the widely used, improved adaptive method.
+
+    Args:
+        image_path (str): The path to the image file.
+    """
+    # --- 1. Image Loading and Validation ---
+    if not os.path.exists(image_path):
+        print(f"Error: Image file not found: '{image_path}'")
+        return
+    
+    # Load image
+    img = cv2.imread(image_path)
+    if img is None:
+        print(f"Error: Unable to read image: '{image_path}'")
+        return
+
+    # --- 2. Image Preprocessing ---
+    # Convert to grayscale if RGB image
+    if len(img.shape) == 3:
+        gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        print("Detected color image, converted to grayscale")
+    else:
+        gray_img = img
+        print("Detected grayscale image")
+
+    # --- 3. Apply Different Histogram Equalization Methods ---
+    # Global Histogram Equalization (HE)
+    he_img = cv2.equalizeHist(gray_img)
+
+    # Adaptive Histogram Equalization (AHE)
+    # Implement AHE using local histogram equalization
+    height, width = gray_img.shape
+    ahe_img = np.zeros_like(gray_img)
+    tile_size = (32, 32)  # Define local region size
+    
+    for i in range(0, height, tile_size[0]):
+        for j in range(0, width, tile_size[1]):
+            # Get local region
+            tile = gray_img[i:min(i+tile_size[0], height), 
+                          j:min(j+tile_size[1], width)]
+            # Apply histogram equalization to local region
+            if tile.size > 0:  # Ensure tile is not empty
+                ahe_img[i:min(i+tile_size[0], height), 
+                       j:min(j+tile_size[1], width)] = cv2.equalizeHist(tile)
+
+    # Contrast Limited Adaptive Histogram Equalization (CLAHE)
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    clahe_img = clahe.apply(gray_img)
+
+    # --- 4. Display Results ---
+    fig, axs = plt.subplots(2, 2, figsize=(12, 10))
+    axs = axs.ravel()
+
+    # Define images and corresponding titles to display
+    images = [gray_img, he_img, ahe_img, clahe_img]
+    titles = ['Original Grayscale', 
+             'Global Histogram Equalization (HE)',
+             'Adaptive Histogram Equalization (AHE)',
+             'CLAHE']
+
+    # Display all images
+    for idx, (img, title) in enumerate(zip(images, titles)):
+        axs[idx].imshow(img, cmap='gray')
+        axs[idx].set_title(title)
+        axs[idx].axis('off')
+
+    plt.tight_layout()
+    plt.show()
+
+    # Free memory
+    gc.collect()
