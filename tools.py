@@ -8,9 +8,11 @@ import gc
 
 class HistogramEqualizationPipeline:
     """
-    直方图均衡化管道
+    Histogram Equalization Pipeline
     
-    该类实现了直方图均衡化的基本操作，包括加载图像、计算直方图、绘制直方图、显示图像、直方图均衡化、颜色直方图均衡化等。
+    This class implements basic operations for histogram equalization, including image loading, 
+    histogram computation, histogram plotting, image display, histogram equalization, 
+    and color histogram equalization.
     """
     def __init__(self, color_level: int = 256):
         self.image = None
@@ -73,11 +75,11 @@ class HistogramEqualizationPipeline:
         """
         range_values = (0, self.bins)
 
-        if len(self.image.shape) > 2:  # 彩色图像
+        if len(self.image.shape) > 2:  # RGB image
             hist = np.zeros((3, self.bins))
             for i in range(3):
                 hist[i], _ = np.histogram(self.image[:, :, i], bins=self.bins, range=range_values)
-        else:  # 灰度图像
+        else:  # gray level image
             hist, _ = np.histogram(self.image, bins=self.bins, range=range_values)
 
         self.histogram = hist
@@ -111,33 +113,33 @@ class HistogramEqualizationPipeline:
         """
 
 
-        # 创建新的图形窗口
+        # Create new figure window
         plt.figure(figsize=(12, 5))
         
-        # 左侧显示图像
+        # Display image on the left
         plt.subplot(121)
-        if len(self.image.shape) == 2:  # 灰度图像
+        if len(self.image.shape) == 2:  # Grayscale image
             plt.imshow(self.image, cmap='gray')
-        else:  # 彩色图像
+        else:  # Color image
             plt.imshow(self.image)
         plt.title(f"{self.colorspace.upper()} Image")
         plt.axis('off')
         
-        # 右侧显示直方图
+        # Display histogram on the right
         plt.subplot(122)
-        if len(self.histogram.shape) > 1:  # 彩色图像直方图
+        if len(self.histogram.shape) > 1:  # Color image histogram
             colors = ['r', 'g', 'b']
             for i, c in enumerate(colors):
                 plt.plot(self.histogram[i], color=c)
             plt.legend(['Red', 'Green', 'Blue'])
-        else:  # 灰度图像直方图
+        else:  # Grayscale histogram
             plt.plot(self.histogram, color='black')
         plt.title(f"Histogram of {self.colorspace} image")
         plt.xlabel('Pixel Value')
         plt.ylabel('Frequency')
         plt.grid(True, alpha=0.3)
         
-        # 设置总标题并显示
+        # Set main title and display
         plt.suptitle(title)
         plt.tight_layout()
         plt.show()
@@ -148,7 +150,7 @@ class HistogramEqualizationPipeline:
         if method == 'global':
             if self.colorspace == 'gray':
                 self.image_equalized = cv2.equalizeHist(self.image.astype(np.uint8))
-                self.histogram_equalized = self.compute_histogram(self.image_equalized, bins=256, range_values=(0, 256))
+                self.histogram_equalized = self.compute_histogram()
                 print("Global histogram equalization (gray level) completed.")
                 
             elif self.colorspace == 'rgb':
@@ -173,17 +175,17 @@ class HistogramEqualizationPipeline:
 
         if self.image_equalized is None:
             self.histogram_equalization()
-        # 创建新的图形窗口
+        # Create new figure window
         if self.colorspace == 'gray':
             plt.figure(figsize=(12, 5))
             
-            # 左侧显示原始图像
+            # Display original image on the left
             plt.subplot(121)
             plt.imshow(self.image, cmap='gray')
             plt.title(f"{self.colorspace.upper()} Image")
             plt.axis('off')
             
-            # 右侧显示均衡化后的图像
+            # Display equalized image on the right
             plt.subplot(122)
             plt.imshow(self.image_equalized, cmap='gray')
             plt.title(f"{self.colorspace.upper()} Image Equalized")
@@ -192,25 +194,25 @@ class HistogramEqualizationPipeline:
         elif self.colorspace == 'rgb':
             plt.figure(figsize=(12, 10))
             
-            # 显示原始RGB图像
+            # Display original RGB image
             plt.subplot(221)
             plt.imshow(self.image)
             plt.title(f"{self.colorspace.upper()} Image")
             plt.axis('off')
             
-            # 显示HSV均衡化结果
+            # Display HSV equalization result
             plt.subplot(222)
             plt.imshow(self.image_equalized[0])
             plt.title(f"{self.colorspace.upper()} Image Equalized with HSV")
             plt.axis('off')
             
-            # 显示YCrCb均衡化结果
+            # Display YCrCb equalization result
             plt.subplot(223)
             plt.imshow(self.image_equalized[1])
             plt.title(f"{self.colorspace.upper()} Image Equalized with YCrCb")
             plt.axis('off')
             
-            # 显示RGB均衡化结果
+            # Display RGB equalization result
             plt.subplot(224)
             plt.imshow(self.image_equalized[2])
             plt.title(f"{self.colorspace.upper()} Image Equalized with RGB")
@@ -219,18 +221,18 @@ class HistogramEqualizationPipeline:
         else:
             raise ValueError("Invalid colorspace. Please choose 'gray' or 'rgb'.")
         
-        # 设置总标题并显示
+        # Set main title and display
         plt.suptitle(title)
         plt.tight_layout()
         plt.show()
     
     def histogram_comparison(self) -> None:
         """
-        比较原始图像和均衡化后的图像的直方图
+        Compare histograms between original image and equalized image
 
-        参数:
-            original_image: 原始图像
-            equalized_image: 均衡化后的图像
+        Args:
+            original_image: Original image
+            equalized_image: Equalized image
         """
         if self.image is None:
             raise ValueError("No image loaded. Please load an image first.")
@@ -243,7 +245,7 @@ class HistogramEqualizationPipeline:
         
         if self.colorspace == 'gray':
 
-            # 绘制直方图
+            # Plot histograms
             plt.figure(figsize=(12, 5))
 
             plt.subplot(121)
@@ -267,7 +269,7 @@ class HistogramEqualizationPipeline:
             plt.figure(figsize=(12, 10))
             colors = ['r', 'g', 'b']
             
-            # 显示原始RGB图像
+            # Display original RGB histogram
             plt.subplot(221)
             for i, c in enumerate(colors):
                 plt.plot(self.histogram[i], color=c)
@@ -278,7 +280,7 @@ class HistogramEqualizationPipeline:
             plt.title(f"{self.colorspace.upper()} Image")
 
             
-            # 显示HSV均衡化结果
+            # Display HSV equalization histogram
             plt.subplot(222)
             for i, c in enumerate(colors):
                 plt.plot(self.histogram_equalized[0, i], color=c)
@@ -289,7 +291,7 @@ class HistogramEqualizationPipeline:
             plt.title(f"{self.colorspace.upper()} Image Equalized with HSV")
 
             
-            # 显示YCrCb均衡化结果
+            # Display YCrCb equalization histogram
             plt.subplot(223)
             for i, c in enumerate(colors):
                 plt.plot(self.histogram_equalized[1, i], color=c)
@@ -300,7 +302,7 @@ class HistogramEqualizationPipeline:
             plt.title(f"{self.colorspace.upper()} Image Equalized with YCrCb")
 
             
-            # 显示RGB均衡化结果
+            # Display RGB equalization histogram
             plt.subplot(224)
             for i, c in enumerate(colors):
                 plt.plot(self.histogram_equalized[2, i], color=c)
@@ -317,25 +319,25 @@ class HistogramEqualizationPipeline:
     
     def color_histogram_equalization(self) -> np.ndarray:
         """
-        对彩色图像进行直方图均衡化
+        Perform histogram equalization on color images
         
-        参数:
-            image: 输入彩色图像 (RGB格式)
-            method: 均衡化方法，可选 'hsv', 'ycrcb', 或 'rgb'
+        Args:
+            image: Input color image (RGB format)
+            method: Equalization method, can be 'hsv', 'ycrcb', or 'rgb'
             
-        返回:
-            均衡化后的彩色图像
+        Returns:
+            Color image after histogram equalization
         """
 
         if len(self.image.shape) != 3:
-            raise ValueError("输入必须是彩色图像")
+            raise ValueError("Input must be a color image")
         
-        # 初始化四维数组存储所有方法的结果
-        # 维度: [方法数, 高度, 宽度, 通道数]
+        # Initialize 4D array to store results of all methods
+        # Dimensions: [num_methods, height, width, channels]
         self.image_equalized = np.zeros((3, *self.image.shape), dtype=self.image.dtype)
         self.histogram_equalized = np.zeros((3, 3, self.bins))
         
-        # HSV方法 (索引0)
+        # HSV method (index 0)
         hsv = cv2.cvtColor(self.image, cv2.COLOR_RGB2HSV)
         hsv[:, :, 2] = cv2.equalizeHist(hsv[:, :, 2])
         self.image_equalized[0] = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
@@ -344,14 +346,14 @@ class HistogramEqualizationPipeline:
             self.histogram_equalized[0, i], _ = np.histogram(self.image_equalized[0, :, :, i], bins=self.bins, range=range_values)
         
         
-        # YCrCb方法 (索引1)
+        # YCrCb method (index 1)
         ycrcb = cv2.cvtColor(self.image, cv2.COLOR_RGB2YCrCb)
         ycrcb[:, :, 0] = cv2.equalizeHist(ycrcb[:, :, 0])
         self.image_equalized[1] = cv2.cvtColor(ycrcb, cv2.COLOR_YCrCb2RGB)
         for i in range(3):
             self.histogram_equalized[1, i], _ = np.histogram(self.image_equalized[1, :, :, i], bins=self.bins, range=range_values)
         
-        # RGB方法 (索引2)
+        # RGB method (index 2)
         for i in range(3):
             self.image_equalized[2, :, :, i] = cv2.equalizeHist(self.image[:, :, i])
         for i in range(3):
@@ -397,32 +399,32 @@ def compute_histogram(image: np.ndarray, bins: int = 256, range_values: Tuple[in
     Returns:
         Histogram array
     """
-    if len(image.shape) > 2:  # 彩色图像
+    if len(image.shape) > 2:  # RGB imgae
         hist = np.zeros((3, bins))
         for i in range(3):
             hist[i], _ = np.histogram(image[:, :, i], bins=bins, range=range_values)
         return hist
-    else:  # 灰度图像
+    else:  # gray level image
         hist, _ = np.histogram(image, bins=bins, range=range_values)
         return hist
 
 
 def plot_histogram(histogram: np.ndarray, title: str = "Histogram", color: Union[str, List[str]] = ['r', 'g', 'b']) -> None:
     """
-    绘制直方图
+    Plot histogram
     
-    参数:
-        histogram: 直方图数据
-        title: 图表标题
-        color: 直方图颜色
+    Args:
+        histogram: Histogram data
+        title: Chart title
+        color: Histogram color
     """
     plt.figure(figsize=(10, 6))
     
-    if len(histogram.shape) > 1:  # 彩色图像直方图
+    if len(histogram.shape) > 1:  # Color image histogram
         for i, c in enumerate(color):
             plt.plot(histogram[i], color=c)
         plt.legend(['Red', 'Green', 'Blue'])
-    else:  # 灰度图像直方图
+    else:  # Grayscale histogram
         plt.plot(histogram, color='black')
     
     plt.title(title)
@@ -435,16 +437,16 @@ def plot_histogram(histogram: np.ndarray, title: str = "Histogram", color: Union
 
 def display_image(image: np.ndarray, title: str = "Image") -> None:
     """
-    显示图像
+    Display image
     
-    参数:
-        image: 要显示的图像
-        title: 图像标题
+    Args:
+        image: Image to display
+        title: Image title
     """
     plt.figure(figsize=(8, 8))
-    if len(image.shape) == 2:  # 灰度图像
+    if len(image.shape) == 2:  # Grayscale image
         plt.imshow(image, cmap='gray')
-    else:  # 彩色图像
+    else:  # Color image
         plt.imshow(image)
     plt.title(title)
     plt.axis('off')
@@ -453,60 +455,60 @@ def display_image(image: np.ndarray, title: str = "Image") -> None:
 
 def histogram_equalization(image: np.ndarray) -> np.ndarray:
     """
-    对灰度图像进行直方图均衡化
+    Perform histogram equalization on grayscale image
     
-    参数:
-        image: 输入灰度图像
+    Args:
+        image: Input grayscale image
         
-    返回:
-        均衡化后的图像
+    Returns:
+        Equalized image
     """
     if len(image.shape) > 2:
-        raise ValueError("此函数仅适用于灰度图像，请先将彩色图像转换为灰度图像")
+        raise ValueError("This function only works with grayscale images. Please convert color images to grayscale first")
     
-    # 使用OpenCV的直方图均衡化函数
+    # Use OpenCV's histogram equalization function
     equalized = cv2.equalizeHist(image.astype(np.uint8))
     return equalized
 
 
 def color_histogram_equalization(image: np.ndarray, method: str = 'hsv') -> np.ndarray:
     """
-    对彩色图像进行直方图均衡化
+    Perform histogram equalization on color images
     
-    参数:
-        image: 输入彩色图像 (RGB格式)
-        method: 均衡化方法，可选 'hsv', 'ycrcb', 或 'rgb'
+    Args:
+        image: Input color image (RGB format)
+        method: Equalization method, can be 'hsv', 'ycrcb', or 'rgb'
         
-    返回:
-        均衡化后的彩色图像
+    Returns:
+        Color image after histogram equalization
     """
     if len(image.shape) != 3:
-        raise ValueError("输入必须是彩色图像")
+        raise ValueError("Input must be a color image")
     
     if method == 'hsv':
-        # 转换到HSV空间
+        # Convert to HSV space
         hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-        # 仅对V通道进行均衡化
+        # Only equalize V channel
         hsv[:, :, 2] = cv2.equalizeHist(hsv[:, :, 2])
-        # 转换回RGB
+        # Convert back to RGB
         result = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
         
     elif method == 'ycrcb':
-        # 转换到YCrCb空间
+        # Convert to YCrCb space
         ycrcb = cv2.cvtColor(image, cv2.COLOR_RGB2YCrCb)
-        # 仅对Y通道进行均衡化
+        # Only equalize Y channel
         ycrcb[:, :, 0] = cv2.equalizeHist(ycrcb[:, :, 0])
-        # 转换回RGB
+        # Convert back to RGB
         result = cv2.cvtColor(ycrcb, cv2.COLOR_YCrCb2RGB)
         
     elif method == 'rgb':
-        # 对每个通道分别进行均衡化
+        # Equalize each channel separately
         result = np.zeros_like(image)
         for i in range(3):
             result[:, :, i] = cv2.equalizeHist(image[:, :, i])
     
     else:
-        raise ValueError("不支持的方法，请选择 'hsv', 'ycrcb', 或 'rgb'")
+        raise ValueError("Unsupported method, please choose 'hsv', 'ycrcb', or 'rgb'")
     
     return result
 
@@ -514,60 +516,60 @@ def color_histogram_equalization(image: np.ndarray, method: str = 'hsv') -> np.n
 def adaptive_histogram_equalization(image: np.ndarray, clip_limit: float = 2.0, 
                                    tile_grid_size: Tuple[int, int] = (8, 8)) -> np.ndarray:
     """
-    应用自适应直方图均衡化 (CLAHE)
+    Apply Contrast Limited Adaptive Histogram Equalization (CLAHE)
     
-    参数:
-        image: 输入图像
-        clip_limit: 对比度限制参数
-        tile_grid_size: 网格大小
+    Args:
+        image: Input image
+        clip_limit: Contrast limit parameter
+        tile_grid_size: Grid size
         
-    返回:
-        CLAHE处理后的图像
+    Returns:
+        CLAHE processed image
     """
-    # 创建CLAHE对象
+    # Create CLAHE object
     clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=tile_grid_size)
     
-    if len(image.shape) == 2:  # 灰度图像
+    if len(image.shape) == 2:  # Grayscale image
         return clahe.apply(image.astype(np.uint8))
     
-    else:  # 彩色图像
-        # 转换到LAB颜色空间
+    else:  # Color image
+        # Convert to LAB color space
         lab = cv2.cvtColor(image, cv2.COLOR_RGB2LAB)
-        # 仅对L通道应用CLAHE
+        # Only apply CLAHE to L channel
         lab[:, :, 0] = clahe.apply(lab[:, :, 0])
-        # 转换回RGB
+        # Convert back to RGB
         return cv2.cvtColor(lab, cv2.COLOR_LAB2RGB)
 
 
 def compute_gradient_histogram(image: np.ndarray, bins: int = 36) -> np.ndarray:
     """
-    计算图像梯度方向的直方图
+    Compute gradient direction histogram of image
     
-    参数:
-        image: 输入灰度图像
-        bins: 直方图的柱数
+    Args:
+        image: Input grayscale image
+        bins: Number of histogram bins
         
-    返回:
-        梯度方向直方图
+    Returns:
+        Gradient direction histogram
     """
-    # 确保图像是灰度的
+    # Ensure image is grayscale
     if len(image.shape) > 2:
         gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
     else:
         gray = image
     
-    # 计算x和y方向的梯度
+    # Calculate x and y gradients
     grad_x = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=3)
     grad_y = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=3)
     
-    # 计算梯度幅值和方向
+    # Calculate gradient magnitude and direction
     magnitude = np.sqrt(grad_x**2 + grad_y**2)
-    angle = np.arctan2(grad_y, grad_x) * 180 / np.pi  # 转换为度
+    angle = np.arctan2(grad_y, grad_x) * 180 / np.pi  # Convert to degrees
     
-    # 将角度转换为0-360度范围
+    # Convert angles to 0-360 degree range
     angle[angle < 0] += 360
     
-    # 计算梯度方向的直方图，使用梯度幅值作为权重
+    # Calculate gradient direction histogram using magnitude as weights
     hist, _ = np.histogram(angle, bins=bins, range=(0, 360), weights=magnitude)
     
     return hist
@@ -575,15 +577,15 @@ def compute_gradient_histogram(image: np.ndarray, bins: int = 36) -> np.ndarray:
 
 def compare_histograms(hist1: np.ndarray, hist2: np.ndarray, method: str = 'correlation') -> float:
     """
-    比较两个直方图的相似度
+    Compare similarity between two histograms
     
-    参数:
-        hist1: 第一个直方图
-        hist2: 第二个直方图
-        method: 比较方法，可选 'correlation', 'chi-square', 'intersection', 'bhattacharyya'
+    Args:
+        hist1: First histogram
+        hist2: Second histogram
+        method: Comparison method, can be 'correlation', 'chi-square', 'intersection', 'bhattacharyya'
         
-    返回:
-        相似度得分
+    Returns:
+        Similarity score
     """
     if method == 'correlation':
         return cv2.compareHist(hist1.astype(np.float32), hist2.astype(np.float32), cv2.HISTCMP_CORREL)
@@ -594,7 +596,7 @@ def compare_histograms(hist1: np.ndarray, hist2: np.ndarray, method: str = 'corr
     elif method == 'bhattacharyya':
         return cv2.compareHist(hist1.astype(np.float32), hist2.astype(np.float32), cv2.HISTCMP_BHATTACHARYYA)
     else:
-        raise ValueError("不支持的比较方法")
+        raise ValueError("Unsupported comparison method")
 
 
 
